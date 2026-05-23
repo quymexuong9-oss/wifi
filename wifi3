@@ -1,133 +1,250 @@
--- Wizard Alchemy Premium GUI - Clean Version
+--// Wizard Alchemy GUI v2
+--// Auto Brew + Block Damage
+--// Draggable Premium UI
+
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
+local player = Players.LocalPlayer
+
+--========================
+-- GUI
+--========================
+
 local gui = Instance.new("ScreenGui")
-gui.Name = "WizardAlchemy"
+gui.Name = "WizardAlchemyV2"
 gui.ResetOnSpawn = false
-gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 340, 0, 480)
-frame.Position = UDim2.new(0.5, -170, 0.5, -240)
-frame.BackgroundColor3 = Color3.fromRGB(22, 22, 35)
+frame.Size = UDim2.new(0, 360, 0, 500)
+frame.Position = UDim2.new(0.5, -180, 0.5, -250)
+frame.BackgroundColor3 = Color3.fromRGB(24,24,35)
 frame.BorderSizePixel = 0
-frame.Visible = true
+frame.Active = true
+frame.Draggable = true
 frame.Parent = gui
 
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 12)
-corner.Parent = frame
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0,14)
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 55)
-title.BackgroundColor3 = Color3.fromRGB(90, 0, 200)
-title.Text = "WIZARD ALCHEMY"
-title.TextColor3 = Color3.new(1,1,1)
+title.Size = UDim2.new(1,0,0,55)
+title.BackgroundColor3 = Color3.fromRGB(110,0,255)
+title.Text = "🧪 WIZARD ALCHEMY V2"
 title.TextScaled = true
 title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.new(1,1,1)
 title.Parent = frame
 
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -38, 0, 12)
-closeBtn.BackgroundTransparency = 1
-closeBtn.Text = "✕"
-closeBtn.TextColor3 = Color3.new(1,1,1)
-closeBtn.TextScaled = true
-closeBtn.Parent = frame
+local titleCorner = Instance.new("UICorner", title)
+titleCorner.CornerRadius = UDim.new(0,14)
 
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(0, 60, 0, 60)
-toggleBtn.Position = UDim2.new(0, 20, 0, 20)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(90, 0, 200)
-toggleBtn.Text = "🧪"
-toggleBtn.TextScaled = true
-toggleBtn.Parent = gui
-
-local toggleCorner = Instance.new("UICorner")
-toggleCorner.CornerRadius = UDim.new(1,0)
-toggleCorner.Parent = toggleBtn
-
+--========================
 -- Potion Data
+--========================
+
 local potionData = {
-    ["Healing Potion"] = "1x Red Flower\n2x Healing Herb\n1x Pure Water",
-    ["Mana Potion"] = "2x Blue Crystal\n1x Mana Leaf\n1x Magic Essence",
-    ["Strength Potion"] = "3x Bear Fang\n1x Power Stone\n2x Red Mushroom",
-    ["Speed Potion"] = "2x Wind Grass\n1x Swift Feather\n1x Lightning Bug",
-    ["Fire Arrow Potion"] = "2x Fire Crystal\n1x Flame Flower\n1x Dragon Scale",
-    ["Ice Spike Potion"] = "2x Ice Shard\n1x Frost Leaf\n1x Frozen Heart",
-    ["Dragon Breath Potion"] = "1x Dragon Scale\n2x Fire Essence\n1x Ancient Bone",
+    ["Healing Potion"] = {
+        recipe = "1x Red Flower\n2x Healing Herb\n1x Pure Water"
+    },
+
+    ["Mana Potion"] = {
+        recipe = "2x Blue Crystal\n1x Mana Leaf\n1x Magic Essence"
+    },
+
+    ["Strength Potion"] = {
+        recipe = "3x Bear Fang\n1x Power Stone\n2x Red Mushroom"
+    },
+
+    ["Speed Potion"] = {
+        recipe = "2x Wind Grass\n1x Swift Feather\n1x Lightning Bug"
+    },
+
+    ["Dragon Breath Potion"] = {
+        recipe = "1x Dragon Scale\n2x Fire Essence\n1x Ancient Bone"
+    }
 }
 
-local selectedPotion = ""
-local brewing = false
-local blocking = false
+local selectedPotion = nil
+local autoBrew = false
+local blockDamage = false
 
--- Buttons
+--========================
+-- Scroll List
+--========================
+
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(0.9,0,0,220)
+scroll.Position = UDim2.new(0.05,0,0,70)
+scroll.CanvasSize = UDim2.new(0,0,0,500)
+scroll.BackgroundColor3 = Color3.fromRGB(35,35,50)
+scroll.BorderSizePixel = 0
+scroll.Parent = frame
+
+local scrollCorner = Instance.new("UICorner", scroll)
+scrollCorner.CornerRadius = UDim.new(0,10)
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0,6)
+layout.Parent = scroll
+
+--========================
+-- Create Potion Buttons
+--========================
+
+for potionName, data in pairs(potionData) do
+
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1,-10,0,70)
+    btn.BackgroundColor3 = Color3.fromRGB(60,60,90)
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextScaled = false
+    btn.TextSize = 15
+    btn.TextWrapped = true
+    btn.Text = potionName .. "\n\n" .. data.recipe
+    btn.Parent = scroll
+
+    local btnCorner = Instance.new("UICorner", btn)
+    btnCorner.CornerRadius = UDim.new(0,10)
+
+    btn.MouseButton1Click:Connect(function()
+
+        selectedPotion = potionName
+
+        for _,v in pairs(scroll:GetChildren()) do
+            if v:IsA("TextButton") then
+                v.BackgroundColor3 = Color3.fromRGB(60,60,90)
+            end
+        end
+
+        btn.BackgroundColor3 = Color3.fromRGB(110,0,255)
+
+    end)
+end
+
+--========================
+-- Auto Brew Button
+--========================
+
 local brewBtn = Instance.new("TextButton")
 brewBtn.Size = UDim2.new(0.9,0,0,50)
-brewBtn.Position = UDim2.new(0.05,0,0,100)
-brewBtn.Text = "AUTO BREW: OFF"
-brewBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-brewBtn.TextColor3 = Color3.new(1,1,1)
+brewBtn.Position = UDim2.new(0.05,0,0,310)
+brewBtn.BackgroundColor3 = Color3.fromRGB(0,170,80)
+brewBtn.Text = "AUTO BREW : OFF"
 brewBtn.TextScaled = true
+brewBtn.Font = Enum.Font.GothamBold
+brewBtn.TextColor3 = Color3.new(1,1,1)
 brewBtn.Parent = frame
+
+local brewCorner = Instance.new("UICorner", brewBtn)
+brewCorner.CornerRadius = UDim.new(0,10)
+
+brewBtn.MouseButton1Click:Connect(function()
+
+    autoBrew = not autoBrew
+
+    brewBtn.Text = "AUTO BREW : " .. (autoBrew and "ON ✅" or "OFF ❌")
+
+end)
+
+--========================
+-- Block Damage Button
+--========================
 
 local blockBtn = Instance.new("TextButton")
 blockBtn.Size = UDim2.new(0.9,0,0,50)
-blockBtn.Position = UDim2.new(0.05,0,0,160)
-blockBtn.Text = "AUTO BLOCK: OFF"
-blockBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-blockBtn.TextColor3 = Color3.new(1,1,1)
+blockBtn.Position = UDim2.new(0.05,0,0,375)
+blockBtn.BackgroundColor3 = Color3.fromRGB(180,40,40)
+blockBtn.Text = "BLOCK DAMAGE : OFF"
 blockBtn.TextScaled = true
+blockBtn.Font = Enum.Font.GothamBold
+blockBtn.TextColor3 = Color3.new(1,1,1)
 blockBtn.Parent = frame
 
--- Toggle & Close
-toggleBtn.MouseButton1Click:Connect(function()
-    frame.Visible = not frame.Visible
-end)
-
-closeBtn.MouseButton1Click:Connect(function()
-    frame.Visible = false
-end)
-
-brewBtn.MouseButton1Click:Connect(function()
-    brewing = not brewing
-    brewBtn.Text = "AUTO BREW: " .. (brewing and "ON ✅" or "OFF")
-end)
+local blockCorner = Instance.new("UICorner", blockBtn)
+blockCorner.CornerRadius = UDim.new(0,10)
 
 blockBtn.MouseButton1Click:Connect(function()
-    blocking = not blocking
-    blockBtn.Text = "AUTO BLOCK: " .. (blocking and "ON ✅" or "OFF")
+
+    blockDamage = not blockDamage
+
+    blockBtn.Text = "BLOCK DAMAGE : " .. (blockDamage and "ON ✅" or "OFF ❌")
+
 end)
 
--- Main Loop
-RunService.Heartbeat:Connect(function()
-    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
-    local root = LocalPlayer.Character.HumanoidRootPart
-    local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
+--========================
+-- Close Button
+--========================
 
-    if blocking and hum then
-        hum.Health = hum.MaxHealth
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0,35,0,35)
+closeBtn.Position = UDim2.new(1,-42,0,10)
+closeBtn.BackgroundTransparency = 1
+closeBtn.Text = "✕"
+closeBtn.TextScaled = true
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.Parent = frame
+
+closeBtn.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
+
+--========================
+-- Main Loop
+--========================
+
+RunService.Heartbeat:Connect(function()
+
+    local character = player.Character
+    if not character then return end
+
+    local humanoid = character:FindFirstChild("Humanoid")
+    local root = character:FindFirstChild("HumanoidRootPart")
+
+    if not humanoid or not root then return end
+
+    -- Block Damage
+    if blockDamage then
+        humanoid.Health = humanoid.MaxHealth
     end
 
-    if brewing and selectedPotion \~= "" then
-        for _, obj in pairs(Workspace:GetDescendants()) do
-            if obj.Name:lower():find("cauldron") or obj.Name:lower():find("alchemy") then
-                if (obj.Position - root.Position).Magnitude < 25 then
-                    root.CFrame = obj.CFrame * CFrame.new(0, 5, 6)
-                    pcall(function()
-                        game:GetService("ReplicatedStorage"):FindFirstChild("BrewPotion", true):FireServer(selectedPotion, 1)
-                    end)
-                    wait(2)
-                    break
+    -- Auto Brew
+    if autoBrew and selectedPotion then
+
+        for _,obj in pairs(Workspace:GetDescendants()) do
+
+            if obj:IsA("BasePart") then
+
+                local name = obj.Name:lower()
+
+                if name:find("cauldron") or name:find("alchemy") then
+
+                    if (obj.Position - root.Position).Magnitude <= 20 then
+
+                        root.CFrame = obj.CFrame * CFrame.new(0,5,5)
+
+                        pcall(function()
+
+                            local remote = ReplicatedStorage:FindFirstChild("BrewPotion", true)
+
+                            if remote then
+                                remote:FireServer(selectedPotion,1)
+                            end
+
+                        end)
+
+                        task.wait(2)
+
+                    end
                 end
             end
         end
     end
 end)
 
-print("✅ Wizard Alchemy Premium GUI Loaded!")
+print("✅ Wizard Alchemy GUI Loaded")
