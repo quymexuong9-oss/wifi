@@ -1,46 +1,101 @@
---// Wizard Alchemy GUI v2 Fixed
-
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local UserInputService = game:GetService("UserInputService")
+local UIS = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
 --========================
--- GUI
+-- MAIN GUI
 --========================
-
 local gui = Instance.new("ScreenGui")
-gui.Name = "WizardAlchemy"
+gui.Name = "AlchemyUI"
 gui.ResetOnSpawn = false
-gui.Parent = player.PlayerGui
+gui.Parent = playerGui
 
+--========================
+-- OPEN BUTTON (floating)
+--========================
+local openBtn = Instance.new("TextButton")
+openBtn.Size = UDim2.new(0,50,0,50)
+openBtn.Position = UDim2.new(0,10,0.7,0)
+openBtn.BackgroundColor3 = Color3.fromRGB(120,0,255)
+openBtn.Text = "🧪"
+openBtn.TextScaled = true
+openBtn.Parent = gui
+
+Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1,0)
+
+--========================
+-- FRAME (menu)
+--========================
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 360, 0, 470)
-frame.Position = UDim2.new(0.5, -180, 0.5, -235)
+frame.Size = UDim2.new(0,260,0,320)
+frame.Position = UDim2.new(0,80,0.25,0)
 frame.BackgroundColor3 = Color3.fromRGB(25,25,35)
-frame.BorderSizePixel = 0
+frame.Visible = false
 frame.Parent = gui
 
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
 
--- Title
+-- TITLE
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,50)
-title.BackgroundColor3 = Color3.fromRGB(120,0,255)
-title.Text = "🧪 Wizard Alchemy"
+title.Size = UDim2.new(1,0,0,40)
+title.BackgroundColor3 = Color3.fromRGB(90,0,200)
+title.Text = "Wizard Alchemy"
 title.TextColor3 = Color3.new(1,1,1)
-title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 title.Parent = frame
 
-Instance.new("UICorner", title).CornerRadius = UDim.new(0,12)
+--========================
+-- STATES
+--========================
+local autoBrew = false
+local blockDamage = false
 
--- Drag GUI
+--========================
+-- BUTTONS
+--========================
+local brewBtn = Instance.new("TextButton")
+brewBtn.Size = UDim2.new(0.9,0,0,45)
+brewBtn.Position = UDim2.new(0.05,0,0,60)
+brewBtn.BackgroundColor3 = Color3.fromRGB(0,170,100)
+brewBtn.Text = "AUTO BREW: OFF"
+brewBtn.TextScaled = true
+brewBtn.Parent = frame
+
+Instance.new("UICorner", brewBtn).CornerRadius = UDim.new(0,10)
+
+brewBtn.MouseButton1Click:Connect(function()
+	autoBrew = not autoBrew
+	brewBtn.Text = autoBrew and "AUTO BREW: ON" or "AUTO BREW: OFF"
+end)
+
+local blockBtn = Instance.new("TextButton")
+blockBtn.Size = UDim2.new(0.9,0,0,45)
+blockBtn.Position = UDim2.new(0.05,0,0,120)
+blockBtn.BackgroundColor3 = Color3.fromRGB(170,50,50)
+blockBtn.Text = "BLOCK DAMAGE: OFF"
+blockBtn.TextScaled = true
+blockBtn.Parent = frame
+
+Instance.new("UICorner", blockBtn).CornerRadius = UDim.new(0,10)
+
+blockBtn.MouseButton1Click:Connect(function()
+	blockDamage = not blockDamage
+	blockBtn.Text = blockDamage and "BLOCK DAMAGE: ON" or "BLOCK DAMAGE: OFF"
+end)
+
+--========================
+-- CLOSE / OPEN
+--========================
+openBtn.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
+end)
+
+--========================
+-- DRAG FRAME
+--========================
 local dragging = false
-local dragInput
 local dragStart
 local startPos
 
@@ -49,26 +104,18 @@ title.InputBegan:Connect(function(input)
 		dragging = true
 		dragStart = input.Position
 		startPos = frame.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
 	end
 end)
 
-title.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
 	end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
-
+UIS.InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 		local delta = input.Position - dragStart
-
 		frame.Position = UDim2.new(
 			startPos.X.Scale,
 			startPos.X.Offset + delta.X,
@@ -79,216 +126,21 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 --========================
--- Potion Data
+-- MAIN LOOP (logic placeholder)
 --========================
+game:GetService("RunService").Heartbeat:Connect(function()
+	local char = player.Character
+	if not char then return end
 
-local potions = {
-	{
-		Name = "Healing Potion",
-		Recipe = "1x Red Flower\n2x Herb\n1x Water"
-	},
-
-	{
-		Name = "Mana Potion",
-		Recipe = "2x Blue Crystal\n1x Mana Leaf"
-	},
-
-	{
-		Name = "Speed Potion",
-		Recipe = "2x Wind Grass\n1x Feather"
-	},
-
-	{
-		Name = "Strength Potion",
-		Recipe = "3x Bear Fang\n1x Power Stone"
-	}
-}
-
-local selectedPotion = nil
-local autoBrew = false
-local blockDamage = false
-
---========================
--- Scroll Frame
---========================
-
-local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(0.9,0,0,210)
-scroll.Position = UDim2.new(0.05,0,0,65)
-scroll.CanvasSize = UDim2.new(0,0,0,400)
-scroll.BackgroundColor3 = Color3.fromRGB(35,35,45)
-scroll.BorderSizePixel = 0
-scroll.Parent = frame
-
-Instance.new("UICorner", scroll).CornerRadius = UDim.new(0,10)
-
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0,5)
-layout.Parent = scroll
-
---========================
--- Potion Buttons
---========================
-
-for _, potion in ipairs(potions) do
-
-	local btn = Instance.new("TextButton")
-
-	btn.Size = UDim2.new(1,-10,0,70)
-	btn.BackgroundColor3 = Color3.fromRGB(55,55,80)
-
-	btn.Text = potion.Name .. "\n\n" .. potion.Recipe
-
-	btn.TextColor3 = Color3.new(1,1,1)
-	btn.Font = Enum.Font.Gotham
-	btn.TextWrapped = true
-	btn.TextSize = 14
-
-	btn.Parent = scroll
-
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
-
-	btn.MouseButton1Click:Connect(function()
-
-		selectedPotion = potion.Name
-
-		for _,v in ipairs(scroll:GetChildren()) do
-			if v:IsA("TextButton") then
-				v.BackgroundColor3 = Color3.fromRGB(55,55,80)
-			end
-		end
-
-		btn.BackgroundColor3 = Color3.fromRGB(120,0,255)
-
-	end)
-end
-
---========================
--- Auto Brew Button
---========================
-
-local brewBtn = Instance.new("TextButton")
-brewBtn.Size = UDim2.new(0.9,0,0,45)
-brewBtn.Position = UDim2.new(0.05,0,0,295)
-brewBtn.BackgroundColor3 = Color3.fromRGB(0,170,100)
-brewBtn.Text = "AUTO BREW : OFF"
-brewBtn.TextScaled = true
-brewBtn.TextColor3 = Color3.new(1,1,1)
-brewBtn.Font = Enum.Font.GothamBold
-brewBtn.Parent = frame
-
-Instance.new("UICorner", brewBtn).CornerRadius = UDim.new(0,10)
-
-brewBtn.MouseButton1Click:Connect(function()
-
-	autoBrew = not autoBrew
+	local hum = char:FindFirstChild("Humanoid")
+	if hum and blockDamage then
+		hum.Health = hum.MaxHealth
+	end
 
 	if autoBrew then
-		brewBtn.Text = "AUTO BREW : ON ✅"
-	else
-		brewBtn.Text = "AUTO BREW : OFF ❌"
-	end
-
-end)
-
---========================
--- Block Damage Button
---========================
-
-local blockBtn = Instance.new("TextButton")
-blockBtn.Size = UDim2.new(0.9,0,0,45)
-blockBtn.Position = UDim2.new(0.05,0,0,355)
-blockBtn.BackgroundColor3 = Color3.fromRGB(180,50,50)
-blockBtn.Text = "BLOCK DAMAGE : OFF"
-blockBtn.TextScaled = true
-blockBtn.TextColor3 = Color3.new(1,1,1)
-blockBtn.Font = Enum.Font.GothamBold
-blockBtn.Parent = frame
-
-Instance.new("UICorner", blockBtn).CornerRadius = UDim.new(0,10)
-
-blockBtn.MouseButton1Click:Connect(function()
-
-	blockDamage = not blockDamage
-
-	if blockDamage then
-		blockBtn.Text = "BLOCK DAMAGE : ON ✅"
-	else
-		blockBtn.Text = "BLOCK DAMAGE : OFF ❌"
-	end
-
-end)
-
---========================
--- Close Button
---========================
-
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0,30,0,30)
-closeBtn.Position = UDim2.new(1,-40,0,10)
-closeBtn.BackgroundTransparency = 1
-closeBtn.Text = "✕"
-closeBtn.TextScaled = true
-closeBtn.TextColor3 = Color3.new(1,1,1)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.Parent = frame
-
-closeBtn.MouseButton1Click:Connect(function()
-	gui:Destroy()
-end)
-
---========================
--- Main Loop
---========================
-
-RunService.Heartbeat:Connect(function()
-
-	local character = player.Character
-	if not character then return end
-
-	local humanoid = character:FindFirstChild("Humanoid")
-	local root = character:FindFirstChild("HumanoidRootPart")
-
-	if not humanoid or not root then
-		return
-	end
-
-	-- Block Damage
-	if blockDamage then
-		humanoid.Health = humanoid.MaxHealth
-	end
-
-	-- Auto Brew
-	if autoBrew and selectedPotion then
-
-		for _, obj in ipairs(Workspace:GetDescendants()) do
-
-			if obj:IsA("BasePart") then
-
-				local lower = string.lower(obj.Name)
-
-				if string.find(lower, "cauldron") or string.find(lower, "alchemy") then
-
-					local distance = (obj.Position - root.Position).Magnitude
-
-					if distance <= 20 then
-
-						root.CFrame = obj.CFrame + Vector3.new(0,5,5)
-
-						local remote = ReplicatedStorage:FindFirstChild("BrewPotion", true)
-
-						if remote then
-							pcall(function()
-								remote:FireServer(selectedPotion, 1)
-							end)
-						end
-
-						task.wait(2)
-					end
-				end
-			end
-		end
+		-- place your brew logic here
+		-- print("brewing...")
 	end
 end)
 
-print("✅ Wizard Alchemy Loaded")
+print("GUI Loaded")
