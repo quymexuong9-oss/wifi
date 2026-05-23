@@ -1,72 +1,88 @@
--- Wizard Alchemy Pro Script
--- Auto Brew All Potions + Auto Block Damage
-
+-- Wizard Alchemy Pro - GUI Nhỏ + Toggle Button
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "WizardAlchemyPro"
+gui.Name = "WizardAlchemyMini"
 gui.ResetOnSpawn = false
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Frame chính (nhỏ hơn và để góc phải)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 400, 0, 520)
-frame.Position = UDim2.new(0.5, -200, 0.5, -260)
-frame.BackgroundColor3 = Color3.fromRGB(18, 18, 38)
+frame.Size = UDim2.new(0, 280, 0, 380)
+frame.Position = UDim2.new(1, -300, 0.3, 0)   -- Đặt ở góc phải
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
 frame.BorderSizePixel = 0
+frame.Visible = false   -- Ban đầu ẩn
 frame.Parent = gui
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 70)
-title.BackgroundColor3 = Color3.fromRGB(120, 0, 255)
-title.Text = "WIZARD ALCHEMY PRO"
+title.Size = UDim2.new(1, 0, 0, 50)
+title.BackgroundColor3 = Color3.fromRGB(110, 0, 230)
+title.Text = "WIZARD ALCHEMY"
 title.TextColor3 = Color3.new(1,1,1)
 title.TextScaled = true
 title.Parent = frame
 
 local potions = {
     "Healing Potion", "Mana Potion", "Strength Potion", "Speed Potion",
-    "Wind Blade Potion", "Rock Blast Potion", "Ice Spike Potion", "Lithe Potion",
-    "Fire Arrow Potion", "Earth Shield Potion", "Ice Turtle Potion", "Tornado Potion",
-    "Meteorite Potion", "Earth Spike Potion", "Frost Thorns Potion", "Night Wraith Potion",
-    "Radiant Sword Potion", "Dragon Breath Potion", "Lotus Bloom Potion"
+    "Wind Blade Potion", "Rock Blast Potion", "Ice Spike Potion", "Fire Arrow Potion",
+    "Earth Shield Potion", "Tornado Potion", "Dragon Breath Potion"
 }
 
 local brewing = false
 local blocking = false
 
+-- Nút Auto Brew
 local brewBtn = Instance.new("TextButton")
-brewBtn.Size = UDim2.new(0.9,0,0,65)
-brewBtn.Position = UDim2.new(0.05,0,0,90)
+brewBtn.Size = UDim2.new(0.9,0,0,50)
+brewBtn.Position = UDim2.new(0.05,0,0,70)
 brewBtn.Text = "AUTO BREW ALL: OFF"
-brewBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 100)
+brewBtn.BackgroundColor3 = Color3.fromRGB(50,50,100)
 brewBtn.TextColor3 = Color3.new(1,1,1)
 brewBtn.TextScaled = true
 brewBtn.Parent = frame
 
+-- Nút Auto Block
 local blockBtn = Instance.new("TextButton")
-blockBtn.Size = UDim2.new(0.9,0,0,65)
-blockBtn.Position = UDim2.new(0.05,0,0,170)
-blockBtn.Text = "AUTO BLOCK DAMAGE: OFF"
-blockBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 100)
+blockBtn.Size = UDim2.new(0.9,0,0,50)
+blockBtn.Position = UDim2.new(0.05,0,0,130)
+blockBtn.Text = "AUTO BLOCK: OFF"
+blockBtn.BackgroundColor3 = Color3.fromRGB(50,50,100)
 blockBtn.TextColor3 = Color3.new(1,1,1)
 blockBtn.TextScaled = true
 blockBtn.Parent = frame
 
+-- Nút Toggle GUI (Nút nhỏ ở góc màn hình)
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 50, 0, 50)
+toggleButton.Position = UDim2.new(1, -60, 0, 20)
+toggleButton.BackgroundColor3 = Color3.fromRGB(110, 0, 230)
+toggleButton.Text = "WA"
+toggleButton.TextColor3 = Color3.new(1,1,1)
+toggleButton.TextScaled = true
+toggleButton.Parent = gui
+
+-- Functions
 brewBtn.MouseButton1Click:Connect(function()
     brewing = not brewing
     brewBtn.Text = "AUTO BREW ALL: " .. (brewing and "ON ✅" or "OFF")
-    brewBtn.BackgroundColor3 = brewing and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(50, 50, 100)
+    brewBtn.BackgroundColor3 = brewing and Color3.fromRGB(0,180,0) or Color3.fromRGB(50,50,100)
 end)
 
 blockBtn.MouseButton1Click:Connect(function()
     blocking = not blocking
-    blockBtn.Text = "AUTO BLOCK DAMAGE: " .. (blocking and "ON ✅" or "OFF")
-    blockBtn.BackgroundColor3 = blocking and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(50, 50, 100)
+    blockBtn.Text = "AUTO BLOCK: " .. (blocking and "ON ✅" or "OFF")
+    blockBtn.BackgroundColor3 = blocking and Color3.fromRGB(0,180,0) or Color3.fromRGB(50,50,100)
 end)
 
+toggleButton.MouseButton1Click:Connect(function()
+    frame.Visible = not frame.Visible
+end)
+
+-- Main Loop
 RunService.Heartbeat:Connect(function()
     if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
     
@@ -79,20 +95,16 @@ RunService.Heartbeat:Connect(function()
 
     if brewing then
         for _, obj in pairs(Workspace:GetDescendants()) do
-            if obj.Name:lower():find("cauldron") or obj.Name:lower():find("alchemy") or obj.Name:lower():find("brew") or obj.Name:lower():find("table") then
-                local distance = (obj.Position - root.Position).Magnitude
-                if distance < 30 then
+            if obj.Name:lower():find("cauldron") or obj.Name:lower():find("alchemy") or obj.Name:lower():find("brew") then
+                if (obj.Position - root.Position).Magnitude < 30 then
                     root.CFrame = obj.CFrame * CFrame.new(0, 5, 7)
                     
                     for _, potion in ipairs(potions) do
                         pcall(function()
                             game:GetService("ReplicatedStorage"):FindFirstChild("BrewPotion", true):FireServer(potion, 1)
                         end)
-                        pcall(function()
-                            game:GetService("ReplicatedStorage"):FindFirstChild("CraftPotion", true):FireServer(potion)
-                        end)
                     end
-                    wait(2)
+                    wait(2.2)
                     break
                 end
             end
@@ -100,4 +112,4 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("✅ Wizard Alchemy Pro Script Loaded!")
+print("✅ Wizard Alchemy Mini GUI Loaded! Nhấn nút WA để mở GUI")
