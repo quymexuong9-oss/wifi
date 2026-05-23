@@ -14,58 +14,5 @@ e:FireServer("\229\136\183\230\150\176\229\188\149\229\175\188")
 end)
 task.wait()
 end
-end)	b.Size = UDim2.new(0.9,0,0,30)
-	b.Position = UDim2.new(0.05,0,0,y)
-	b.Text = p
-	b.BackgroundColor3 = Color3.fromRGB(45,45,70)
-	b.TextColor3 = Color3.new(1,1,1)
-	b.Parent = list
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
-
-	b.MouseButton1Click:Connect(function()
-		selectedPotion = p
-		title.Text = "Selected: "..p
-	end)
-
-	y += 32
-end
-
---========================
--- TOGGLES
---========================
-local brewBtn = Instance.new("TextButton")
-brewBtn.Size = UDim2.new(0.9,0,0,35)
-brewBtn.Position = UDim2.new(0.05,0,1,-70)
-brewBtn.Text = "AUTO BREW: OFF"
-brewBtn.BackgroundColor3 = Color3.fromRGB(0,170,100)
-brewBtn.TextScaled = true
-brewBtn.Parent = frame
-Instance.new("UICorner", brewBtn).CornerRadius = UDim.new(0,6)
-
-brewBtn.MouseButton1Click:Connect(function()
-	autoBrew = not autoBrew
-	brewBtn.Text = autoBrew and "AUTO BREW: ON" or "AUTO BREW: OFF"
 end)
-
-local blockBtn = Instance.new("TextButton")
-blockBtn.Size = UDim2.new(0.9,0,0,35)
-blockBtn.Position = UDim2.new(0.05,0,1,-35)
-blockBtn.Text = "BLOCK DAMAGE: OFF"
-blockBtn.BackgroundColor3 = Color3.fromRGB(170,50,50)
-blockBtn.TextScaled = true
-blockBtn.Parent = frame
-Instance.new("UICorner", blockBtn).CornerRadius = UDim.new(0,6)
-
-blockBtn.MouseButton1Click:Connect(function()
-	blockDamage = not blockDamage
-	blockBtn.Text = blockDamage and "BLOCK DAMAGE: ON" or "BLOCK DAMAGE: OFF"
-end)
-
---========================
--- OPEN/CLOSE
---========================
-openBtn.MouseButton1Click:Connect(function()
-	frame.Visible = not frame.Visible
-end)
-
 print("Wizard Alchemy GUI Loaded")
