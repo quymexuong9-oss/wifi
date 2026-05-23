@@ -1,138 +1,65 @@
 local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-
 local player = Players.LocalPlayer
+
 local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "PotionSystemV2"
 
 --========================
--- OPEN BUTTON
+-- MAIN FRAME
 --========================
-local open = Instance.new("TextButton")
-open.Size = UDim2.new(0,45,0,45)
-open.Position = UDim2.new(0,10,0.75,0)
-open.Text = "☰"
-open.TextScaled = true
-open.BackgroundColor3 = Color3.fromRGB(120,0,255)
-open.Parent = gui
-Instance.new("UICorner", open).CornerRadius = UDim.new(1,0)
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,340,0,380)
+frame.Position = UDim2.new(0.1,0,0.2,0)
+frame.BackgroundColor3 = Color3.fromRGB(18,18,28)
+frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
 
---========================
--- MAIN HUB
---========================
-local main = Instance.new("Frame")
-main.Size = UDim2.new(0,420,0,260)
-main.Position = UDim2.new(0.3,0,0.3,0)
-main.BackgroundColor3 = Color3.fromRGB(18,18,25)
-main.Visible = false
-main.Parent = gui
-Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
-
-local stroke = Instance.new("UIStroke", main)
+local stroke = Instance.new("UIStroke", frame)
 stroke.Color = Color3.fromRGB(140,0,255)
-stroke.Thickness = 1.5
+
+-- TITLE
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,0,0,40)
+title.BackgroundColor3 = Color3.fromRGB(120,0,255)
+title.Text = "Potion System"
+title.TextScaled = true
+title.TextColor3 = Color3.new(1,1,1)
+title.Parent = frame
 
 --========================
--- LEFT TAB MENU
+-- SEARCH BOX
 --========================
-local left = Instance.new("Frame")
-left.Size = UDim2.new(0,120,1,0)
-left.BackgroundColor3 = Color3.fromRGB(25,25,35)
-left.Parent = main
-
-local function tab(name, y)
-	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(1,0,0,40)
-	b.Position = UDim2.new(0,0,0,y)
-	b.Text = name
-	b.TextScaled = true
-	b.BackgroundColor3 = Color3.fromRGB(40,40,60)
-	b.TextColor3 = Color3.new(1,1,1)
-	b.Parent = left
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
-	return b
-end
-
-local potTab = tab("Potions", 10)
-local setTab = tab("Settings", 60)
+local search = Instance.new("TextBox")
+search.Size = UDim2.new(0.9,0,0,30)
+search.Position = UDim2.new(0.05,0,0,50)
+search.PlaceholderText = "Search potion..."
+search.Text = ""
+search.BackgroundColor3 = Color3.fromRGB(35,35,50)
+search.TextColor3 = Color3.new(1,1,1)
+search.Parent = frame
+Instance.new("UICorner", search).CornerRadius = UDim.new(0,6)
 
 --========================
--- RIGHT CONTENT
+-- SCROLL LIST
 --========================
-local right = Instance.new("Frame")
-right.Size = UDim2.new(1,-120,1,0)
-right.Position = UDim2.new(0,120,0,0)
-right.BackgroundTransparency = 1
-right.Parent = main
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(0.9,0,0,150)
+scroll.Position = UDim2.new(0.05,0,0,90)
+scroll.BackgroundColor3 = Color3.fromRGB(25,25,40)
+scroll.ScrollBarThickness = 4
+scroll.Parent = frame
+Instance.new("UICorner", scroll).CornerRadius = UDim.new(0,8)
 
--- PAGES
-local potPage = Instance.new("Frame", right)
-potPage.Size = UDim2.new(1,0,1,0)
-potPage.BackgroundTransparency = 1
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0,5)
 
-local setPage = Instance.new("Frame", right)
-setPage.Size = potPage.Size
-setPage.BackgroundTransparency = 1
-setPage.Visible = false
-
---========================
--- POTION LIST
---========================
-local potions = {
-	"Healing Potion",
-	"Mana Potion",
-	"Speed Potion",
-	"Strength Potion"
-}
-
-local y = 10
-
-for _,v in ipairs(potions) do
-	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(1,-20,0,35)
-	b.Position = UDim2.new(0,10,0,y)
-	b.Text = v
-	b.BackgroundColor3 = Color3.fromRGB(45,45,70)
-	b.TextColor3 = Color3.new(1,1,1)
-	b.Parent = potPage
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
-	y += 40
-end
-
---========================
--- SETTINGS TOGGLES
---========================
-local function toggle(text, y)
-	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(0.9,0,0,40)
-	b.Position = UDim2.new(0.05,0,0,y)
-	b.Text = text
-	b.BackgroundColor3 = Color3.fromRGB(70,30,30)
-	b.TextScaled = true
-	b.TextColor3 = Color3.new(1,1,1)
-	b.Parent = setPage
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
-	return b
-end
-
-local brew = toggle("AUTO BREW: OFF", 10)
-local block = toggle("BLOCK DAMAGE: OFF", 60)
-
---========================
--- TAB SWITCH
---========================
-potTab.MouseButton1Click:Connect(function()
-	potPage.Visible = true
-	setPage.Visible = false
-end)
-
-setTab.MouseButton1Click:Connect(function()
-	potPage.Visible = false
-	setPage.Visible = true
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 10)
 end)
 
 --========================
--- OPEN / CLOSE
+-- DISPLAY RECIPE
 --========================
-open.MouseButton1Click:Connect(function()
-	main.Visible = not main.Visible
-end)
+local display = Instance.new("TextLabel")
+display.Size = UDim2.new(0.9,0,0,120)
+display.Position = UDim2.new(0.05,0,0,250)
