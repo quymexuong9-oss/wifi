@@ -1,73 +1,20 @@
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+getgenv().Dupe=true
+local q="\228\187\187\229\138\16113"
+local r=game:GetService("ReplicatedStorage"):WaitForChild("Msg")
+local t=r:WaitForChild("Function"):WaitForChild("TalkFunc")
+local e=r:WaitForChild("RemoteEvent"):WaitForChild("RemoteEvent")
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "WizardAlchemyFixed"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
-
---========================
--- OPEN BUTTON
---========================
-local openBtn = Instance.new("TextButton")
-openBtn.Size = UDim2.new(0,50,0,50)
-openBtn.Position = UDim2.new(0,10,0.7,0)
-openBtn.Text = "🧪"
-openBtn.BackgroundColor3 = Color3.fromRGB(130,0,255)
-openBtn.TextScaled = true
-openBtn.Parent = gui
-Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1,0)
-
---========================
--- MAIN FRAME
---========================
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,280,0,320)
-frame.Position = UDim2.new(0,70,0.25,0)
-frame.BackgroundColor3 = Color3.fromRGB(20,20,30)
-frame.Visible = false
-frame.Parent = gui
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
-
--- TITLE
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,35)
-title.Text = "Wizard Alchemy"
-title.BackgroundColor3 = Color3.fromRGB(120,0,255)
-title.TextColor3 = Color3.new(1,1,1)
-title.TextScaled = true
-title.Parent = frame
-
---========================
--- DATA
---========================
-local potions = {
-	"Healing Potion",
-	"Mana Potion",
-	"Speed Potion",
-	"Strength Potion",
-	"Fire Potion",
-	"Ice Potion",
-}
-
-local selectedPotion = nil
-local autoBrew = false
-local blockDamage = false
-
---========================
--- LIST AREA (FIXED)
---========================
-local list = Instance.new("Frame")
-list.Size = UDim2.new(1,0,1,-120)
-list.Position = UDim2.new(0,0,0,40)
-list.BackgroundTransparency = 1
-list.Parent = frame
-
-local y = 0
-
-for _,p in ipairs(potions) do
-	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(0.9,0,0,30)
+task.spawn(function()
+while getgenv().Dupe do
+task.spawn(function()
+e:FireServer("\232\167\166\229\143\145\232\129\138\229\164\169",{"\229\147\136\229\136\169\229\155\160\231\137\185","10010100"})
+task.spawn(function()t:InvokeServer("\229\174\140\230\136\144\228\187\187\229\138\161",{q})end)
+task.spawn(function()t:InvokeServer("\229\143\145\230\148\190\228\187\187\229\138\161",{q})end)
+e:FireServer("\229\136\183\230\150\176\229\188\149\229\175\188")
+end)
+task.wait()
+end
+end)	b.Size = UDim2.new(0.9,0,0,30)
 	b.Position = UDim2.new(0.05,0,0,y)
 	b.Text = p
 	b.BackgroundColor3 = Color3.fromRGB(45,45,70)
