@@ -1,33 +1,38 @@
 local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+
 local player = Players.LocalPlayer
 
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "PotionSystemV2"
+gui.Name = "PotionWikiFull"
 
 --========================
 -- MAIN FRAME
 --========================
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,340,0,380)
-frame.Position = UDim2.new(0.1,0,0.2,0)
+frame.Size = UDim2.new(0,420,0,450)
+frame.Position = UDim2.new(0.08,0,0.15,0)
 frame.BackgroundColor3 = Color3.fromRGB(18,18,28)
 frame.Parent = gui
+
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
 
 local stroke = Instance.new("UIStroke", frame)
 stroke.Color = Color3.fromRGB(140,0,255)
 
+--========================
 -- TITLE
+--========================
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,0,0,40)
 title.BackgroundColor3 = Color3.fromRGB(120,0,255)
-title.Text = "Potion System"
+title.Text = "Potion Wiki System"
 title.TextScaled = true
 title.TextColor3 = Color3.new(1,1,1)
 title.Parent = frame
 
 --========================
--- SEARCH BOX
+-- SEARCH
 --========================
 local search = Instance.new("TextBox")
 search.Size = UDim2.new(0.9,0,0,30)
@@ -40,26 +45,142 @@ search.Parent = frame
 Instance.new("UICorner", search).CornerRadius = UDim.new(0,6)
 
 --========================
+-- TABS
+--========================
+local tabFrame = Instance.new("Frame")
+tabFrame.Size = UDim2.new(0.9,0,0,30)
+tabFrame.Position = UDim2.new(0.05,0,0,85)
+tabFrame.BackgroundTransparency = 1
+tabFrame.Parent = frame
+
+local function makeTab(name, x)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(0.33,0,1,0)
+	b.Position = UDim2.new(x,0,0,0)
+	b.Text = name
+	b.BackgroundColor3 = Color3.fromRGB(45,45,65)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Parent = tabFrame
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+	return b
+end
+
+local healTab = makeTab("Healing", 0)
+local magicTab = makeTab("Magic", 0.34)
+local combatTab = makeTab("Combat", 0.68)
+
+--========================
 -- SCROLL LIST
 --========================
 local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(0.9,0,0,150)
-scroll.Position = UDim2.new(0.05,0,0,90)
-scroll.BackgroundColor3 = Color3.fromRGB(25,25,40)
+scroll.Size = UDim2.new(0.95,0,0,250)
+scroll.Position = UDim2.new(0.025,0,0,120)
+scroll.BackgroundTransparency = 1
 scroll.ScrollBarThickness = 4
 scroll.Parent = frame
-Instance.new("UICorner", scroll).CornerRadius = UDim.new(0,8)
 
 local layout = Instance.new("UIListLayout", scroll)
-layout.Padding = UDim.new(0,5)
+layout.Padding = UDim.new(0,6)
 
 layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 	scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 10)
 end)
 
 --========================
--- DISPLAY RECIPE
+-- DISPLAY
 --========================
 local display = Instance.new("TextLabel")
-display.Size = UDim2.new(0.9,0,0,120)
-display.Position = UDim2.new(0.05,0,0,250)
+display.Size = UDim2.new(0.95,0,0,80)
+display.Position = UDim2.new(0.025,0,0,375)
+display.BackgroundColor3 = Color3.fromRGB(30,30,45)
+display.TextColor3 = Color3.new(1,1,1)
+display.TextWrapped = true
+display.Text = "Select a potion"
+display.Parent = frame
+Instance.new("UICorner", display).CornerRadius = UDim.new(0,8)
+
+--========================
+-- DATA
+--========================
+local potions = {
+	{Name="Healing Potion", Type="Healing", Recipe="Red Flower x1\nHerb x2\nWater x1"},
+	{Name="Mega Healing Potion", Type="Healing", Recipe="Red Flower x3\nHoly Herb x2\nPure Water x1"},
+
+	{Name="Mana Potion", Type="Magic", Recipe="Blue Crystal x2\nMana Leaf x1"},
+	{Name="Arcane Potion", Type="Magic", Recipe="Magic Core x1\nBlue Crystal x5"},
+
+	{Name="Speed Potion", Type="Combat", Recipe="Wind Grass x2\nFeather x1"},
+	{Name="Ultra Speed Potion", Type="Combat", Recipe="Lightning Feather x2\nWind Essence x3"},
+
+	{Name="Strength Potion", Type="Combat", Recipe="Bear Fang x3\nPower Stone x1"},
+	{Name="Titan Potion", Type="Combat", Recipe="Titan Core x1\nBear Fang x6"},
+}
+
+local currentTab = "Healing"
+local buttons = {}
+
+--========================
+-- CREATE LIST
+--========================
+local function loadList()
+	scroll:ClearAllChildren()
+	layout.Parent = scroll
+	buttons = {}
+
+	for _,p in ipairs(potions) do
+		if p.Type == currentTab then
+
+			local b = Instance.new("TextButton")
+			b.Size = UDim2.new(1,-10,0,35)
+			b.BackgroundColor3 = Color3.fromRGB(45,45,70)
+			b.TextColor3 = Color3.new(1,1,1)
+			b.Text = p.Name
+			b.Parent = scroll
+
+			Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+
+			b.MouseButton1Click:Connect(function()
+				display.Text = p.Recipe
+			end)
+
+			table.insert(buttons, b)
+		end
+	end
+end
+
+loadList()
+
+--========================
+-- TAB SWITCH
+--========================
+healTab.MouseButton1Click:Connect(function()
+	currentTab = "Healing"
+	loadList()
+end)
+
+magicTab.MouseButton1Click:Connect(function()
+	currentTab = "Magic"
+	loadList()
+end)
+
+combatTab.MouseButton1Click:Connect(function()
+	currentTab = "Combat"
+	loadList()
+end)
+
+--========================
+-- SEARCH FILTER
+--========================
+search:GetPropertyChangedSignal("Text"):Connect(function()
+	local txt = string.lower(search.Text)
+
+	for _,b in ipairs(scroll:GetChildren()) do
+		if b:IsA("TextButton") then
+			if string.find(string.lower(b.Text), txt) then
+				b.Visible = true
+			else
+				b.Visible = false
+			end
+		end
+	end
+end)
