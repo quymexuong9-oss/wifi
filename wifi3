@@ -1,91 +1,202 @@
--- Wizard Alchemy Pro - GUI Nhỏ + Toggle Button
+-- Wizard Alchemy - GUI Đẹp + Draggable + Chọn Thuốc + Nguyên Liệu
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "WizardAlchemyMini"
+gui.Name = "WizardAlchemyPremium"
 gui.ResetOnSpawn = false
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Frame chính (nhỏ hơn và để góc phải)
+-- Frame chính
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 280, 0, 380)
-frame.Position = UDim2.new(1, -300, 0.3, 0)   -- Đặt ở góc phải
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
+frame.Size = UDim2.new(0, 320, 0, 460)
+frame.Position = UDim2.new(0.5, -160, 0.5, -230)
+frame.BackgroundColor3 = Color3.fromRGB(22, 22, 35)
 frame.BorderSizePixel = 0
-frame.Visible = false   -- Ban đầu ẩn
+frame.Visible = false
 frame.Parent = gui
 
+-- Bo góc
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = frame
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 50)
-title.BackgroundColor3 = Color3.fromRGB(110, 0, 230)
+title.Size = UDim2.new(1, 0, 0, 55)
+title.BackgroundColor3 = Color3.fromRGB(90, 0, 200)
 title.Text = "WIZARD ALCHEMY"
 title.TextColor3 = Color3.new(1,1,1)
 title.TextScaled = true
+title.Font = Enum.Font.GothamBold
 title.Parent = frame
 
-local potions = {
-    "Healing Potion", "Mana Potion", "Strength Potion", "Speed Potion",
-    "Wind Blade Potion", "Rock Blast Potion", "Ice Spike Potion", "Fire Arrow Potion",
-    "Earth Shield Potion", "Tornado Potion", "Dragon Breath Potion"
-}
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 12)
+titleCorner.Parent = title
 
-local brewing = false
-local blocking = false
+-- Nút đóng
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 10)
+closeBtn.BackgroundTransparency = 1
+closeBtn.Text = "✕"
+closeBtn.TextColor3 = Color3.new(1,1,1)
+closeBtn.TextScaled = true
+closeBtn.Parent = frame
 
--- Nút Auto Brew
+-- Scrolling List Thuốc
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(0.95, 0, 0, 200)
+scroll.Position = UDim2.new(0.025, 0, 0, 70)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 6
+scroll.Parent = frame
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Padding = UDim.new(0, 5)
+listLayout.Parent = scroll
+
+-- Hiển thị nguyên liệu
+local materialLabel = Instance.new("TextLabel")
+materialLabel.Size = UDim2.new(0.95, 0, 0, 120)
+materialLabel.Position = UDim2.new(0.025, 0, 0, 280)
+materialLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 50)
+materialLabel.Text = "Chọn thuốc để xem nguyên liệu"
+materialLabel.TextColor3 = Color3.new(1,1,1)
+materialLabel.TextScaled = true
+materialLabel.TextWrapped = true
+materialLabel.Parent = frame
+
+local matCorner = Instance.new("UICorner")
+matCorner.CornerRadius = UDim.new(0, 8)
+matCorner.Parent = materialLabel
+
+-- Nút Auto Brew & Auto Block
 local brewBtn = Instance.new("TextButton")
-brewBtn.Size = UDim2.new(0.9,0,0,50)
-brewBtn.Position = UDim2.new(0.05,0,0,70)
-brewBtn.Text = "AUTO BREW ALL: OFF"
-brewBtn.BackgroundColor3 = Color3.fromRGB(50,50,100)
+brewBtn.Size = UDim2.new(0.9,0,0,45)
+brewBtn.Position = UDim2.new(0.05,0,0,410)
+brewBtn.Text = "AUTO BREW: OFF"
+brewBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
 brewBtn.TextColor3 = Color3.new(1,1,1)
 brewBtn.TextScaled = true
 brewBtn.Parent = frame
 
--- Nút Auto Block
 local blockBtn = Instance.new("TextButton")
-blockBtn.Size = UDim2.new(0.9,0,0,50)
-blockBtn.Position = UDim2.new(0.05,0,0,130)
+blockBtn.Size = UDim2.new(0.9,0,0,45)
+blockBtn.Position = UDim2.new(0.05,0,0, 0) -- sẽ điều chỉnh sau
 blockBtn.Text = "AUTO BLOCK: OFF"
-blockBtn.BackgroundColor3 = Color3.fromRGB(50,50,100)
+blockBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
 blockBtn.TextColor3 = Color3.new(1,1,1)
 blockBtn.TextScaled = true
 blockBtn.Parent = frame
 
--- Nút Toggle GUI (Nút nhỏ ở góc màn hình)
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0, 50, 0, 50)
-toggleButton.Position = UDim2.new(1, -60, 0, 20)
-toggleButton.BackgroundColor3 = Color3.fromRGB(110, 0, 230)
-toggleButton.Text = "WA"
-toggleButton.TextColor3 = Color3.new(1,1,1)
-toggleButton.TextScaled = true
-toggleButton.Parent = gui
+-- Nút Toggle nhỏ
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 55, 0, 55)
+toggleBtn.Position = UDim2.new(1, -70, 0, 20)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(90, 0, 200)
+toggleBtn.Text = "🧪"
+toggleBtn.TextScaled = true
+toggleBtn.Parent = gui
 
--- Functions
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 50)
+toggleCorner.Parent = toggleBtn
+
+-- ================== DANH SÁCH THUỐC + NGUYÊN LIỆU ==================
+local potionData = {
+    ["Healing Potion"] = "1x Red Flower\n2x Healing Herb\n1x Pure Water",
+    ["Mana Potion"] = "2x Blue Crystal\n1x Mana Leaf\n1x Magic Essence",
+    ["Strength Potion"] = "3x Bear Fang\n1x Power Stone\n2x Red Mushroom",
+    ["Speed Potion"] = "2x Wind Grass\n1x Swift Feather\n1x Lightning Bug",
+    ["Fire Arrow Potion"] = "2x Fire Crystal\n1x Flame Flower\n1x Dragon Scale",
+    ["Ice Spike Potion"] = "2x Ice Shard\n1x Frost Leaf\n1x Frozen Heart",
+    ["Dragon Breath Potion"] = "1x Dragon Scale\n2x Fire Essence\n1x Ancient Bone",
+}
+
+local selectedPotion = ""
+
+-- Tạo button cho từng thuốc
+for potionName, materials in pairs(potionData) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 40)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 70)
+    btn.Text = potionName
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.TextScaled = true
+    btn.Parent = scroll
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        selectedPotion = potionName
+        materialLabel.Text = "Nguyên liệu cần cho " .. potionName .. ":\n\n" .. materials
+    end)
+end
+
+scroll.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 20)
+
+-- Draggable GUI
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+    end
+end)
+
+title.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        update(input)
+    end
+end)
+
+-- Toggle GUI
+toggleBtn.MouseButton1Click:Connect(function()
+    frame.Visible = not frame.Visible
+end)
+
+closeBtn.MouseButton1Click:Connect(function()
+    frame.Visible = false
+end)
+
+-- Auto Brew & Block
+local brewing = false
+local blocking = false
+
 brewBtn.MouseButton1Click:Connect(function()
     brewing = not brewing
-    brewBtn.Text = "AUTO BREW ALL: " .. (brewing and "ON ✅" or "OFF")
-    brewBtn.BackgroundColor3 = brewing and Color3.fromRGB(0,180,0) or Color3.fromRGB(50,50,100)
+    brewBtn.Text = "AUTO BREW: " .. (brewing and "ON ✅" or "OFF")
+    brewBtn.BackgroundColor3 = brewing and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(0, 170, 0)
 end)
 
 blockBtn.MouseButton1Click:Connect(function()
     blocking = not blocking
     blockBtn.Text = "AUTO BLOCK: " .. (blocking and "ON ✅" or "OFF")
-    blockBtn.BackgroundColor3 = blocking and Color3.fromRGB(0,180,0) or Color3.fromRGB(50,50,100)
 end)
 
-toggleButton.MouseButton1Click:Connect(function()
-    frame.Visible = not frame.Visible
-end)
-
--- Main Loop
 RunService.Heartbeat:Connect(function()
     if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
-    
     local root = LocalPlayer.Character.HumanoidRootPart
     local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
 
@@ -93,18 +204,15 @@ RunService.Heartbeat:Connect(function()
         hum.Health = hum.MaxHealth
     end
 
-    if brewing then
+    if brewing and selectedPotion \~= "" then
         for _, obj in pairs(Workspace:GetDescendants()) do
-            if obj.Name:lower():find("cauldron") or obj.Name:lower():find("alchemy") or obj.Name:lower():find("brew") then
-                if (obj.Position - root.Position).Magnitude < 30 then
-                    root.CFrame = obj.CFrame * CFrame.new(0, 5, 7)
-                    
-                    for _, potion in ipairs(potions) do
-                        pcall(function()
-                            game:GetService("ReplicatedStorage"):FindFirstChild("BrewPotion", true):FireServer(potion, 1)
-                        end)
-                    end
-                    wait(2.2)
+            if obj.Name:lower():find("cauldron") or obj.Name:lower():find("alchemy") then
+                if (obj.Position - root.Position).Magnitude < 25 then
+                    root.CFrame = obj.CFrame * CFrame.new(0, 5, 6)
+                    pcall(function()
+                        game:GetService("ReplicatedStorage"):FindFirstChild("BrewPotion", true):FireServer(selectedPotion, 1)
+                    end)
+                    wait(2)
                     break
                 end
             end
@@ -112,4 +220,4 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("✅ Wizard Alchemy Mini GUI Loaded! Nhấn nút WA để mở GUI")
+print("✅ Wizard Alchemy Premium GUI Loaded!")
