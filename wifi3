@@ -2,63 +2,80 @@ local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
-
-local gui = Instance.new("ScreenGui")
-gui.Name = "AlchemyUI"
-gui.ResetOnSpawn = false
-gui.Parent = game.CoreGui
+local gui = Instance.new("ScreenGui", game.CoreGui)
 
 --========================
 -- OPEN BUTTON
 --========================
-local openBtn = Instance.new("TextButton")
-openBtn.Size = UDim2.new(0,45,0,45)
-openBtn.Position = UDim2.new(0,10,0.7,0)
-openBtn.BackgroundColor3 = Color3.fromRGB(120,0,255)
-openBtn.Text = "🧪"
-openBtn.TextScaled = true
-openBtn.Parent = gui
-Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1,0)
+local open = Instance.new("TextButton")
+open.Size = UDim2.new(0,45,0,45)
+open.Position = UDim2.new(0,10,0.75,0)
+open.Text = "☰"
+open.TextScaled = true
+open.BackgroundColor3 = Color3.fromRGB(120,0,255)
+open.Parent = gui
+Instance.new("UICorner", open).CornerRadius = UDim.new(1,0)
 
 --========================
--- FRAME
+-- MAIN HUB
 --========================
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,260,0,320)
-frame.Position = UDim2.new(0,70,0.25,0)
-frame.BackgroundColor3 = Color3.fromRGB(20,20,28)
-frame.Visible = false
-frame.Parent = gui
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0,420,0,260)
+main.Position = UDim2.new(0.3,0,0.3,0)
+main.BackgroundColor3 = Color3.fromRGB(18,18,25)
+main.Visible = false
+main.Parent = gui
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
 
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
-
-local stroke = Instance.new("UIStroke", frame)
-stroke.Color = Color3.fromRGB(120,0,255)
-stroke.Thickness = 1
-
---========================
--- TITLE
---========================
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,35)
-title.BackgroundColor3 = Color3.fromRGB(90,0,200)
-title.Text = "Wizard Alchemy"
-title.TextColor3 = Color3.new(1,1,1)
-title.TextScaled = true
-title.Font = Enum.Font.GothamBold
-title.Parent = frame
-
-Instance.new("UICorner", title).CornerRadius = UDim.new(0,12)
+local stroke = Instance.new("UIStroke", main)
+stroke.Color = Color3.fromRGB(140,0,255)
+stroke.Thickness = 1.5
 
 --========================
--- STATES
+-- LEFT TAB MENU
 --========================
-local autoBrew = false
-local blockDamage = false
-local selectedPotion = ""
+local left = Instance.new("Frame")
+left.Size = UDim2.new(0,120,1,0)
+left.BackgroundColor3 = Color3.fromRGB(25,25,35)
+left.Parent = main
+
+local function tab(name, y)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1,0,0,40)
+	b.Position = UDim2.new(0,0,0,y)
+	b.Text = name
+	b.TextScaled = true
+	b.BackgroundColor3 = Color3.fromRGB(40,40,60)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Parent = left
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+	return b
+end
+
+local potTab = tab("Potions", 10)
+local setTab = tab("Settings", 60)
 
 --========================
--- LIST
+-- RIGHT CONTENT
+--========================
+local right = Instance.new("Frame")
+right.Size = UDim2.new(1,-120,1,0)
+right.Position = UDim2.new(0,120,0,0)
+right.BackgroundTransparency = 1
+right.Parent = main
+
+-- PAGES
+local potPage = Instance.new("Frame", right)
+potPage.Size = UDim2.new(1,0,1,0)
+potPage.BackgroundTransparency = 1
+
+local setPage = Instance.new("Frame", right)
+setPage.Size = potPage.Size
+setPage.BackgroundTransparency = 1
+setPage.Visible = false
+
+--========================
+-- POTION LIST
 --========================
 local potions = {
 	"Healing Potion",
@@ -67,105 +84,55 @@ local potions = {
 	"Strength Potion"
 }
 
-local y = 45
+local y = 10
 
 for _,v in ipairs(potions) do
-
 	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(0.9,0,0,35)
-	b.Position = UDim2.new(0.05,0,0,y)
-	b.BackgroundColor3 = Color3.fromRGB(45,45,65)
+	b.Size = UDim2.new(1,-20,0,35)
+	b.Position = UDim2.new(0,10,0,y)
 	b.Text = v
-	b.TextScaled = true
+	b.BackgroundColor3 = Color3.fromRGB(45,45,70)
 	b.TextColor3 = Color3.new(1,1,1)
-	b.Parent = frame
-
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
-
-	b.MouseButton1Click:Connect(function()
-		selectedPotion = v
-
-		for _,x in ipairs(frame:GetChildren()) do
-			if x:IsA("TextButton") then
-				x.BackgroundColor3 = Color3.fromRGB(45,45,65)
-			end
-		end
-
-		b.BackgroundColor3 = Color3.fromRGB(120,0,255)
-	end)
-
-	y = y + 38
+	b.Parent = potPage
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+	y += 40
 end
 
 --========================
--- BUTTONS
+-- SETTINGS TOGGLES
 --========================
-local brewBtn = Instance.new("TextButton")
-brewBtn.Size = UDim2.new(0.9,0,0,35)
-brewBtn.Position = UDim2.new(0.05,0,0,210)
-brewBtn.BackgroundColor3 = Color3.fromRGB(0,170,100)
-brewBtn.Text = "AUTO BREW: OFF"
-brewBtn.TextScaled = true
-brewBtn.Parent = frame
+local function toggle(text, y)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(0.9,0,0,40)
+	b.Position = UDim2.new(0.05,0,0,y)
+	b.Text = text
+	b.BackgroundColor3 = Color3.fromRGB(70,30,30)
+	b.TextScaled = true
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Parent = setPage
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+	return b
+end
 
-Instance.new("UICorner", brewBtn).CornerRadius = UDim.new(0,8)
+local brew = toggle("AUTO BREW: OFF", 10)
+local block = toggle("BLOCK DAMAGE: OFF", 60)
 
-brewBtn.MouseButton1Click:Connect(function()
-	autoBrew = not autoBrew
-	brewBtn.Text = autoBrew and "AUTO BREW: ON" or "AUTO BREW: OFF"
+--========================
+-- TAB SWITCH
+--========================
+potTab.MouseButton1Click:Connect(function()
+	potPage.Visible = true
+	setPage.Visible = false
 end)
 
-local blockBtn = Instance.new("TextButton")
-blockBtn.Size = UDim2.new(0.9,0,0,35)
-blockBtn.Position = UDim2.new(0.05,0,0,250)
-blockBtn.BackgroundColor3 = Color3.fromRGB(170,50,50)
-blockBtn.Text = "BLOCK DAMAGE: OFF"
-blockBtn.TextScaled = true
-blockBtn.Parent = frame
-
-Instance.new("UICorner", blockBtn).CornerRadius = UDim.new(0,8)
-
-blockBtn.MouseButton1Click:Connect(function()
-	blockDamage = not blockDamage
-	blockBtn.Text = blockDamage and "BLOCK DAMAGE: ON" or "BLOCK DAMAGE: OFF"
+setTab.MouseButton1Click:Connect(function()
+	potPage.Visible = false
+	setPage.Visible = true
 end)
 
 --========================
 -- OPEN / CLOSE
 --========================
-openBtn.MouseButton1Click:Connect(function()
-	frame.Visible = not frame.Visible
-end)
-
---========================
--- DRAG
---========================
-local dragging = false
-local dragStart
-local startPos
-
-title.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = frame.Position
-	end
-end)
-
-UIS.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = false
-	end
-end)
-
-UIS.InputChanged:Connect(function(input)
-	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local delta = input.Position - dragStart
-		frame.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-	end
+open.MouseButton1Click:Connect(function()
+	main.Visible = not main.Visible
 end)
