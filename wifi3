@@ -2,8 +2,9 @@ local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
+
 local gui = Instance.new("ScreenGui")
-gui.Name = "CleanAlchemyUI"
+gui.Name = "AlchemyUI"
 gui.ResetOnSpawn = false
 gui.Parent = game.CoreGui
 
@@ -20,24 +21,23 @@ openBtn.Parent = gui
 Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1,0)
 
 --========================
--- MAIN FRAME
+-- FRAME
 --========================
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,250,0,280)
+frame.Size = UDim2.new(0,260,0,320)
 frame.Position = UDim2.new(0,70,0.25,0)
 frame.BackgroundColor3 = Color3.fromRGB(20,20,28)
 frame.Visible = false
 frame.Parent = gui
+
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
 
--- shadow feel (fake border)
-local stroke = Instance.new("UIStroke")
+local stroke = Instance.new("UIStroke", frame)
 stroke.Color = Color3.fromRGB(120,0,255)
-stroke.Thickness = 1.2
-stroke.Parent = frame
+stroke.Thickness = 1
 
 --========================
--- TITLE BAR
+-- TITLE
 --========================
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,0,0,35)
@@ -47,42 +47,83 @@ title.TextColor3 = Color3.new(1,1,1)
 title.TextScaled = true
 title.Font = Enum.Font.GothamBold
 title.Parent = frame
+
 Instance.new("UICorner", title).CornerRadius = UDim.new(0,12)
 
 --========================
--- STATE
+-- STATES
 --========================
 local autoBrew = false
 local blockDamage = false
+local selectedPotion = ""
 
 --========================
--- BUTTON CREATOR
+-- LIST
 --========================
-local function createButton(txt, y, color)
+local potions = {
+	"Healing Potion",
+	"Mana Potion",
+	"Speed Potion",
+	"Strength Potion"
+}
+
+local y = 45
+
+for _,v in ipairs(potions) do
+
 	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(0.9,0,0,40)
+	b.Size = UDim2.new(0.9,0,0,35)
 	b.Position = UDim2.new(0.05,0,0,y)
-	b.BackgroundColor3 = color
-	b.Text = txt
+	b.BackgroundColor3 = Color3.fromRGB(45,45,65)
+	b.Text = v
 	b.TextScaled = true
-	b.Font = Enum.Font.GothamBold
 	b.TextColor3 = Color3.new(1,1,1)
 	b.Parent = frame
 
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,10)
-	return b
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,8)
+
+	b.MouseButton1Click:Connect(function()
+		selectedPotion = v
+
+		for _,x in ipairs(frame:GetChildren()) do
+			if x:IsA("TextButton") then
+				x.BackgroundColor3 = Color3.fromRGB(45,45,65)
+			end
+		end
+
+		b.BackgroundColor3 = Color3.fromRGB(120,0,255)
+	end)
+
+	y = y + 38
 end
 
 --========================
 -- BUTTONS
 --========================
-local brewBtn = createButton("AUTO BREW: OFF", 50, Color3.fromRGB(0,170,100))
-local blockBtn = createButton("BLOCK DAMAGE: OFF", 100, Color3.fromRGB(170,50,50))
+local brewBtn = Instance.new("TextButton")
+brewBtn.Size = UDim2.new(0.9,0,0,35)
+brewBtn.Position = UDim2.new(0.05,0,0,210)
+brewBtn.BackgroundColor3 = Color3.fromRGB(0,170,100)
+brewBtn.Text = "AUTO BREW: OFF"
+brewBtn.TextScaled = true
+brewBtn.Parent = frame
+
+Instance.new("UICorner", brewBtn).CornerRadius = UDim.new(0,8)
 
 brewBtn.MouseButton1Click:Connect(function()
 	autoBrew = not autoBrew
 	brewBtn.Text = autoBrew and "AUTO BREW: ON" or "AUTO BREW: OFF"
 end)
+
+local blockBtn = Instance.new("TextButton")
+blockBtn.Size = UDim2.new(0.9,0,0,35)
+blockBtn.Position = UDim2.new(0.05,0,0,250)
+blockBtn.BackgroundColor3 = Color3.fromRGB(170,50,50)
+blockBtn.Text = "BLOCK DAMAGE: OFF"
+blockBtn.TextScaled = true
+blockBtn.Parent = frame
+
+Instance.new("UICorner", blockBtn).CornerRadius = UDim.new(0,8)
 
 blockBtn.MouseButton1Click:Connect(function()
 	blockDamage = not blockDamage
@@ -90,7 +131,7 @@ blockBtn.MouseButton1Click:Connect(function()
 end)
 
 --========================
--- TOGGLE GUI BUTTON
+-- OPEN / CLOSE
 --========================
 openBtn.MouseButton1Click:Connect(function()
 	frame.Visible = not frame.Visible
